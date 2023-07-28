@@ -9,7 +9,6 @@ urlpatterns = [
 
 scheduler_1 = BackgroundScheduler()
 scheduler_1.add_jobstore(DjangoJobStore(), "default")
-scheduler_2 = BackgroundScheduler()
 
 
 def job_scheduler_start_now():
@@ -17,21 +16,20 @@ def job_scheduler_start_now():
     scheduled_time = str(scheduler_1.get_job('period_task').next_run_time)
     # if scheduled_time[11:13] != get_schedule_hour(task_scheduler_obj) or scheduled_time[14:16] != get_schedule_minute(
     #         task_scheduler_obj):
-    scheduler_1.add_job(job_scheduler_start_period, 'cron', day_of_week=task_scheduler_obj.Job_1_Schedule_Hour,
+    scheduler_1.add_job(job_scheduler_start_period, 'cron', day_of_week=task_scheduler_obj.Job_1_Schedule_Day,
                         hour=task_scheduler_obj.Job_1_Schedule_Hour,
-                        minute=task_scheduler_obj.Job_1_Schedule_Hour,
+                        minute=task_scheduler_obj.Job_1_Schedule_Minute,
                         second='00', id='period_task', replace_existing=True)
-    print(task_scheduler_obj.Job_2_Start)
-    if task_scheduler_obj.Job_2_Start:
-        scheduler_1.add_job(job_scheduler_start_period, 'cron', day_of_week=task_scheduler_obj.Job_2_Schedule_Hour,
-                            hour=task_scheduler_obj.Job_2_Schedule_Hour,
-                            minute=task_scheduler_obj.Job_2_Schedule_Hour,
-                            second='00', id='period_task_2', replace_existing=True)
-    else:
-        try:
-            scheduler_1.remove_job('period_task_2')
-        except:
-            pass
+    # if task_scheduler_obj.Job_2_Start:
+    #     scheduler_1.add_job(job_scheduler_start_period, 'cron', day_of_week=task_scheduler_obj.Job_2_Schedule_Day,
+    #                         hour=task_scheduler_obj.Job_2_Schedule_Hour,
+    #                         minute=task_scheduler_obj.Job_2_Schedule_Minute,
+    #                         second='00', id='period_task_2', replace_existing=True)
+    # else:
+    #     try:
+    #         scheduler_1.remove_job('period_task_2')
+    #     except:
+    #         pass
 
 
 def job_scheduler_start_period():
