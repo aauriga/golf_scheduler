@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -31,20 +31,20 @@ class Scheduler(models.Model):
     Job_1_Schedule_Minute = models.CharField(max_length=20, default='0')
     Username_1 = models.CharField(max_length=30, default='yifenghuang@hotmail.com')
     Password_1 = models.CharField(max_length=20, default='LaoYeGolf')
-    Username_2 = models.CharField(max_length=30, default='yifenghuang@hotmail.com')
-    Password_2 = models.CharField(max_length=20, default='LaoYeGolf')
+    Username_2 = models.CharField(max_length=30, default='husgarden1@gmail.com')
+    Password_2 = models.CharField(max_length=20, default='garden2227')
     Website_Url = models.CharField(max_length=50, default='https://foreupsoftware.com/booking/20954#/login')
     Email = models.CharField(max_length=50, default='zhen.gong@predictifsolutions.com')
-    Date_1 = models.DateField(default=one_week_ahead, validators=[validate_date])
-    Time_Slot_1 = models.TimeField()
+    Date_1 = models.DateField(default=one_week_ahead)
+    Time_Slot_1 = models.TimeField(default=datetime.now)
     Start_2 = models.BooleanField(default=False)
-    Date_2 = models.DateField(default=one_week_ahead, validators=[validate_date])
-    Time_Slot_2 = models.TimeField()
+    Date_2 = models.DateField(default=one_week_ahead)
+    Time_Slot_2 = models.TimeField(default=datetime.now)
     Start_3 = models.BooleanField(default=False)
-    Date_3 = models.DateField(default=one_week_ahead, validators=[validate_date])
-    Time_Slot_3 = models.TimeField()
+    Date_3 = models.DateField(default=one_week_ahead)
+    Time_Slot_3 = models.TimeField(default=datetime.now)
     Start_4 = models.BooleanField(default=False)
-    Date_4 = models.DateField(default=one_week_ahead, validators=[validate_date])
-    Time_Slot_4 = models.TimeField()
+    Date_4 = models.DateField(default=one_week_ahead)
+    Time_Slot_4 = models.TimeField(default=datetime.now)
     def __str__(self):
         return self.title
