@@ -2,3 +2,4 @@ beautifulsoup4
 django
 django_apscheduler
 selenium
+ntplib

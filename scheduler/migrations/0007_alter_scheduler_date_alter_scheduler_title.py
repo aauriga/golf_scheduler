@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='scheduler',
             name='Date',
-            field=models.DateField(default=scheduler.models.Scheduler.one_week_ahead, validators=[scheduler.models.Scheduler.validate_date]),
+            field=models.DateField(validators=[scheduler.models.Scheduler.validate_date]),
         ),
         migrations.AlterField(
             model_name='scheduler',
