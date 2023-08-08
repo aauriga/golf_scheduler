@@ -22,3 +22,5 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/admin/'), name='index'),
     path('', include('scheduler.scheduler')),
 ]
+admin.site.site_header = "JEFF's Golf Scheduler!"
+admin.site.site_title = "JEFF's Golf Scheduler!"

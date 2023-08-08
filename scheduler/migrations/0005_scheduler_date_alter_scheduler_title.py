@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='scheduler',
             name='Date',
-            field=models.DateField(default=scheduler.models.Scheduler.one_week_ahead),
+            field=models.DateField(),
         ),
         migrations.AlterField(
             model_name='scheduler',
