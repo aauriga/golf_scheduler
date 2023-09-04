@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta, datetime
 
 from django.core.exceptions import ValidationError
@@ -27,7 +28,7 @@ class Scheduler(models.Model):
         max_length=200,
         default='task-' + str(timezone.now().strftime('%Y_%m_%d_%H_%M_%S')))
     user = models.CharField(max_length=20, default='admin')
-    Schedule_Time = models.TimeField(null=True, blank=True)
+    Schedule_Time = models.CharField(null=True, blank=True, max_length=100)
     Job_1_Pre_Start_Time = models.TimeField(null=True, blank=True)
     Job_1_Schedule_Day = models.CharField(max_length=20, default='sun')
     Username_1 = models.CharField(max_length=30, default='yifenghuang@hotmail.com')
@@ -60,3 +61,16 @@ class Scheduler(models.Model):
 
     def __str__(self):
         return self.title
+
+    def clean(self):
+        # Regular expression to match HH:MM:SS:ms format
+        pattern = re.compile(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:[0-9]{3}$')
+
+        if not pattern.match(self.Schedule_Time):
+            raise ValidationError({
+                'Schedule_Time': ValidationError('Invalid time format. Expected format: HH:MM:SS:ms.'),
+            })
+
+    def save(self, *args, **kwargs):
+        self.clean()  # Validate before saving
+        super(Scheduler, self).save(*args, **kwargs)

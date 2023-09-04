@@ -98,11 +98,13 @@ def retry_wrapper(target_func, max_retries, id, *args):
         time.sleep(random.uniform(0.1, 0.5))
 
 
-def add_second_to_timefield(time_value, advance_second):
-    # Combine the time_value with today's date
-    dt = datetime.combine(datetime.today(), time_value)
+from datetime import timedelta
 
-    # Add 1 second
+def add_second_to_timefield(time_str, advance_second):
+    # Convert the time string to a datetime object
+    dt = datetime.strptime(time_str, '%H:%M:%S:%f')
+
+    # Add the specified number of seconds
     dt += timedelta(seconds=advance_second)
 
     # Extract the time and return

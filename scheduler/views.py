@@ -94,7 +94,7 @@ def wait_until(target_time, offset=timedelta(0)):
         now = datetime.now()
         if now >= target_datetime:
             break
-        time.sleep(0.1)
+        time.sleep(0.05)
 
 
 def book_golf(url, username, password, date_time, date, email, date1, date2, bool1, thread, start_time, offset, isRetry=False):
@@ -118,7 +118,7 @@ def book_golf(url, username, password, date_time, date, email, date1, date2, boo
         print(isRetry)
         if not isRetry:
             wait_until(start_time, offset)
-        print('wait_until at Local timestamp:' + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + '   ' + thread)
+        print('wait_until at Local timestamp:' + datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:23] + '   ' + thread)
         driver.find_element(By.XPATH, '//*[@id="submit_button"]/input').click()
         WebDriverWait(driver, timeout=3).until(
             EC.visibility_of_element_located((By.XPATH, '//*[@id="date-menu"]')))
