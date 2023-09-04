@@ -18,7 +18,7 @@ class VerifyError(Exception):
 
 
 def my_job():
-    print(1)
+    print(' ')
 
 
 def verify_dates(date1: str, date2: str, date_format='%Y-%m-%d') -> bool:
@@ -44,9 +44,9 @@ def is_date_in_list(date_list, single_date):
     return single_date in date_list
 
 
-def convert_time(time):
+def convert_time(convert_time):
     """Converts a time string in 'hh:mmpm/am' format to a datetime object."""
-    return datetime.strptime(time, "%I:%M%p")
+    return datetime.strptime(convert_time, "%I:%M%p")
 
 
 def find_closest_time(time_list, target_time):
@@ -80,15 +80,24 @@ def wait_until(target_time, offset=timedelta(0)):
     Make the program wait until the local time (plus offset) reaches the specified target time.
     """
     # Combine the target_time with today's date
+    current_datetime = datetime.now()
     target_datetime = datetime.combine(date.today(), target_time)
+
+    # If the target_time has already passed for the current day, set it for the next day
+    if current_datetime.time() > target_time:
+        target_datetime += timedelta(days=1)
+
+    if offset is None:
+        offset = timedelta(0)
+
     while True:
-        now = datetime.now() + offset
+        now = datetime.now()
         if now >= target_datetime:
             break
         time.sleep(0.1)
 
 
-def book_golf(url, username, password, date_time, date, email, date1, date2, bool1, thread, start_time, offset):
+def book_golf(url, username, password, date_time, date, email, date1, date2, bool1, thread, start_time, offset, isRetry=False):
     # if not verify_dates(date1, date2):
     #     raise VerifyError('Verify is failed')
     # else:
@@ -99,17 +108,19 @@ def book_golf(url, username, password, date_time, date, email, date1, date2, boo
         driver = webdriver.Chrome(options=opts)
         # Perform the login
         driver.get(url)
-        WebDriverWait(driver, timeout=4).until(EC.visibility_of_element_located((By.ID, "login_email")))
+        WebDriverWait(driver, timeout=20).until(EC.visibility_of_element_located((By.ID, "login_email")))
         username_field = driver.find_element(By.ID, "login_email")
         password_field = driver.find_element(By.ID, "login_password")
         username_field.send_keys(username)
         password_field.send_keys(password)
-        WebDriverWait(driver, timeout=4).until(
+        WebDriverWait(driver, timeout=20).until(
             EC.visibility_of_element_located((By.XPATH, '//*[@id="submit_button"]/input')))
-        wait_until(start_time, offset)
-        print('wait_until at Local timestamp:' + datetime.now().strftime('%Y-%m-%d %H:%M:%S')+'   '+thread)
+        print(isRetry)
+        if not isRetry:
+            wait_until(start_time, offset)
+        print('wait_until at Local timestamp:' + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + '   ' + thread)
         driver.find_element(By.XPATH, '//*[@id="submit_button"]/input').click()
-        WebDriverWait(driver, timeout=4).until(
+        WebDriverWait(driver, timeout=3).until(
             EC.visibility_of_element_located((By.XPATH, '//*[@id="date-menu"]')))
         date_menu = driver.find_element(By.XPATH, '//*[@id="date-menu"]')
         date_menu_select = Select(date_menu)
@@ -126,11 +137,12 @@ def book_golf(url, username, password, date_time, date, email, date1, date2, boo
         #         return False
 
         date_menu_select.select_by_visible_text(convert_date_format(str(date)))
-        WebDriverWait(driver, timeout=10).until(
+        WebDriverWait(driver, timeout=3).until(
             EC.visibility_of_element_located((By.XPATH, '//*[@id="nav"]/div/div[3]/div/div/a[4]')))
+        time.sleep(0.2)
         player_menu = driver.find_element(By.XPATH, '//*[@id="nav"]/div/div[3]/div/div/a[4]')
         player_menu.click()
-        WebDriverWait(driver, timeout=4).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="times"]/div'
+        WebDriverWait(driver, timeout=3).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="times"]/div'
                                                                                            '/div[ '
                                                                                            '2]/div/div/div/div['
                                                                                            '1]/div[ '
@@ -144,23 +156,23 @@ def book_golf(url, username, password, date_time, date, email, date1, date2, boo
             tee_times.index(book_time) + 1) + ']'
         booking_button = driver.find_element(By.XPATH, booking_button_xpath)
         booking_button.click()
-        print('Booking job running at Local timestamp:' + datetime.now().strftime('%Y-%m-%d %H:%M:%S')+'   '+thread)
+        print('Booking job running at Local timestamp:' + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + '   ' + thread)
         time.sleep(0.5)
         while check_element_exist('//*[@id="book_time"]/div'
                                   '/div[2]/div[5]/div[1]/div/a['
                                   '1]', driver) is not True:
             driver.refresh
             print('duplicate date selected, refresh ' + thread)
-            WebDriverWait(driver, timeout=10).until(
+            WebDriverWait(driver, timeout=3).until(
                 EC.visibility_of_element_located((By.XPATH, '//*[@id="date-menu"]')))
             date_menu = driver.find_element(By.XPATH, '//*[@id="date-menu"]')
             date_menu_select = Select(date_menu)
             date_menu_select.select_by_visible_text(convert_date_format(str(date)))
-            WebDriverWait(driver, timeout=10).until(
+            WebDriverWait(driver, timeout=3).until(
                 EC.visibility_of_element_located((By.XPATH, '//*[@id="nav"]/div/div[3]/div/div/a[4]')))
             player_menu = driver.find_element(By.XPATH, '//*[@id="nav"]/div/div[3]/div/div/a[4]')
             player_menu.click()
-            WebDriverWait(driver, timeout=10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="times"]/div'
+            WebDriverWait(driver, timeout=3).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="times"]/div'
                                                                                                 '/div[ '
                                                                                                 '2]/div/div/div/div['
                                                                                                 '1]/div[ '
@@ -175,26 +187,26 @@ def book_golf(url, username, password, date_time, date, email, date1, date2, boo
             booking_button = driver.find_element(By.XPATH, booking_button_xpath)
             booking_button.click()
             time.sleep(random.uniform(0.1, 1.0))
-        WebDriverWait(driver, timeout=4).until(
+        WebDriverWait(driver, timeout=3).until(
             EC.visibility_of_element_located((By.XPATH, '//*[@id="book_time"]/div'
                                                         '/div[2]/div[5]/div[1]/div/a['
                                                         '1]')))
-        print('date confirmed, tread ' + thread)
-        player_button_xpath = '//*[@id="book_time"]/div/div[2]/div[5]/div[1]/div/a[4]'
-        player_button = driver.find_element(By.XPATH, player_button_xpath)
-        player_button.click()
+        print('date confirmed, thread ' + thread)
+        # player_button_xpath = '//*[@id="book_time"]/div/div[2]/div[5]/div[1]/div/a[4]'
+        # player_button = driver.find_element(By.XPATH, player_button_xpath)
+        # player_button.click()
         carts_button = driver.find_element(By.XPATH, '//*[@id="book_time"]/div/div[2]/div[5]/div[2]/div/a[1]')
         carts_button.click()
         book_time_button = driver.find_element(By.XPATH, '//*[@id="book_time"]/div/div[3]/button[1]')
         book_time_button.click()
-        WebDriverWait(driver, timeout=4).until(
+        WebDriverWait(driver, timeout=3).until(
             EC.visibility_of_element_located((By.XPATH, '//*[@id="payment_methods'
                                                         '"]/li[1]/label/div[1]')))
         pay_at_facility_button = driver.find_element(By.XPATH, '//*[@id="payment_methods"]/li[1]/label/div[1]')
         pay_at_facility_button.click()
         final_book_button = driver.find_element(By.XPATH, '//*[@id="payment_selection"]/div/div[3]/button[1]')
         final_book_button.click()
-        WebDriverWait(driver, timeout=4).until(
+        WebDriverWait(driver, timeout=3).until(
             EC.visibility_of_element_located((By.XPATH, '//*[@id="content"]/div/h1')))
         result = driver.find_element(By.XPATH, '//*[@id="content"]/div/h1')
         print('Tee time book successful, thread ' + thread)

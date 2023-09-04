@@ -18,6 +18,8 @@ urlpatterns = [
 ]
 
 offset = None
+
+
 def apply_offset_to_time(time_field_value, day_value):
     # Dictionary to map day string to integer value
     day_mapping = {'mon': 0, 'tue': 1, 'wed': 2, 'thu': 3, 'fri': 4, 'sat': 5, 'sun': 6}
@@ -39,7 +41,7 @@ def apply_offset_to_time(time_field_value, day_value):
     time_with_offset = datetime.combine(datetime.today().date(), time_field_value)
 
     # Apply the offset to the given TimeField value
-    time_with_offset -= offset
+    # time_with_offset -= offset
 
     # Get the corresponding integer value for the given day_value
     day_index = day_mapping.get(day_value.lower())
@@ -57,9 +59,10 @@ scheduler_1.add_job(my_job, 'interval', seconds=27, id='something', replace_exis
 scheduler_1.start()
 
 
-def error_handling_book_time(url, username, password, date_time, date, email, date1, date2, bool1, thread, result, start_time, offset):
+def error_handling_book_time(url, username, password, date_time, date, email, date1, date2, bool1, thread, result,
+                             start_time, offset, isRetry):
     try:
-        book_golf(url, username, password, date_time, date, email, date1, date2, bool1, str(thread), start_time, offset)
+        book_golf(url, username, password, date_time, date, email, date1, date2, bool1, str(thread), start_time, offset, isRetry)
         return True
     except Exception as e:
         print(str(e))
@@ -84,12 +87,15 @@ def convert_datetime_str(datetime_str: str, in_format='%Y-%m-%d %H:%M:%S%z', out
 def retry_wrapper(target_func, max_retries, id, *args):
     retries = 0
     while retries < max_retries:
-        result = target_func(*args)
+        if retries <1:
+            result = target_func(*args, False)
+        else:
+            result = target_func(*args, True)
         if result is True:  # Replace this line with the appropriate success condition for your use case
             break
         retries += 1
         print(f"Retrying function {target_func.__name__} {retries}...  " + str(id))
-        time.sleep(random.uniform(0.5, 1.5))
+        time.sleep(random.uniform(0.1, 0.5))
 
 
 def add_second_to_timefield(time_value, advance_second):
@@ -102,11 +108,13 @@ def add_second_to_timefield(time_value, advance_second):
     # Extract the time and return
     return dt.time()
 
+
 @receiver(post_save, sender=Scheduler)
 def job_scheduler_start_now(**kwargs):
     global offset
     task_scheduler_obj = Scheduler.objects.get(user='admin')
-    time_field_value = apply_offset_to_time(task_scheduler_obj.Job_1_Pre_Start_Time, task_scheduler_obj.Job_1_Schedule_Day)
+    time_field_value = apply_offset_to_time(task_scheduler_obj.Job_1_Pre_Start_Time,
+                                            task_scheduler_obj.Job_1_Schedule_Day)
     offset = time_field_value[2]
     print(str(time_field_value[0].strftime('%Y-%m-%d %H:%M:%S')))
     print(str(time_field_value[1]))
@@ -122,33 +130,52 @@ def job_scheduler_start_period():
     next_run_job = scheduler_1.get_job('period_task', jobstore='default')
     next_run_date = next_run_job.next_run_time
     scheduled_date = convert_datetime_str(str(next_run_date))
+    wait= scheduler_obj.Wait_Between_Thread
     print('Booking job running at Local timestamp:' + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     result = [None] * 5
     threads = [
         Thread(target=retry_wrapper, args=(
-            error_handling_book_time, scheduler_obj.Number_of_Retries, 1, scheduler_obj.Website_Url, scheduler_obj.Username_1,
+            error_handling_book_time, scheduler_obj.Number_of_Retries, 1, scheduler_obj.Website_Url,
+            scheduler_obj.Username_1,
             scheduler_obj.Password_1,
             scheduler_obj.Time_Slot_1, scheduler_obj.Date_1, scheduler_obj.Email, scheduled_date,
             str(scheduler_obj.Date_1),
-            scheduler_obj.Start_1, 1, result, add_second_to_timefield(scheduler_obj.Schedule_Time, 1), offset)),
+            scheduler_obj.Start_1, 1, result, add_second_to_timefield(scheduler_obj.Schedule_Time, 0), offset)),
         Thread(target=retry_wrapper, args=(
-            error_handling_book_time, scheduler_obj.Number_of_Retries, 2, scheduler_obj.Website_Url, scheduler_obj.Username_1,
+            error_handling_book_time, scheduler_obj.Number_of_Retries, 2, scheduler_obj.Website_Url,
+            scheduler_obj.Username_1,
             scheduler_obj.Password_1,
             scheduler_obj.Time_Slot_2, scheduler_obj.Date_2, scheduler_obj.Email, scheduled_date,
             str(scheduler_obj.Date_2),
-            scheduler_obj.Start_2, 2, result,  add_second_to_timefield(scheduler_obj.Schedule_Time, 2), offset)),
+            scheduler_obj.Start_2, 2, result, add_second_to_timefield(scheduler_obj.Schedule_Time, wait), offset)),
         Thread(target=retry_wrapper, args=(
-            error_handling_book_time, scheduler_obj.Number_of_Retries, 3, scheduler_obj.Website_Url, scheduler_obj.Username_2,
+            error_handling_book_time, scheduler_obj.Number_of_Retries, 3, scheduler_obj.Website_Url,
+            scheduler_obj.Username_2,
             scheduler_obj.Password_2,
             scheduler_obj.Time_Slot_3, scheduler_obj.Date_3, scheduler_obj.Email, scheduled_date,
             str(scheduler_obj.Date_3),
-            scheduler_obj.Start_3, 3, result,  add_second_to_timefield(scheduler_obj.Schedule_Time, 3), offset)),
+            scheduler_obj.Start_3, 3, result, add_second_to_timefield(scheduler_obj.Schedule_Time, 2*wait), offset)),
         Thread(target=retry_wrapper, args=(
-            error_handling_book_time, scheduler_obj.Number_of_Retries, 4, scheduler_obj.Website_Url, scheduler_obj.Username_2,
+            error_handling_book_time, scheduler_obj.Number_of_Retries, 4, scheduler_obj.Website_Url,
+            scheduler_obj.Username_2,
             scheduler_obj.Password_2,
             scheduler_obj.Time_Slot_4, scheduler_obj.Date_4, scheduler_obj.Email, scheduled_date,
             str(scheduler_obj.Date_4),
-            scheduler_obj.Start_4, 4, result,  add_second_to_timefield(scheduler_obj.Schedule_Time, 4), offset))
+            scheduler_obj.Start_4, 4, result, add_second_to_timefield(scheduler_obj.Schedule_Time, 3*wait), offset)),
+        Thread(target=retry_wrapper, args=(
+            error_handling_book_time, scheduler_obj.Number_of_Retries, 4, scheduler_obj.Website_Url,
+            scheduler_obj.Username_1,
+            scheduler_obj.Password_1,
+            scheduler_obj.Time_Slot_5, scheduler_obj.Date_5, scheduler_obj.Email, scheduled_date,
+            str(scheduler_obj.Date_5),
+            scheduler_obj.Start_5, 5, result, add_second_to_timefield(scheduler_obj.Schedule_Time, 4*wait), offset)),
+        Thread(target=retry_wrapper, args=(
+            error_handling_book_time, scheduler_obj.Number_of_Retries, 4, scheduler_obj.Website_Url,
+            scheduler_obj.Username_2,
+            scheduler_obj.Password_2,
+            scheduler_obj.Time_Slot_6, scheduler_obj.Date_6, scheduler_obj.Email, scheduled_date,
+            str(scheduler_obj.Date_6),
+            scheduler_obj.Start_6, 6, result, add_second_to_timefield(scheduler_obj.Schedule_Time, 5*wait), offset))
     ]
     for thread in threads:
         thread.start()

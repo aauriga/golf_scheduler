@@ -37,6 +37,7 @@ class Scheduler(models.Model):
     Website_Url = models.CharField(max_length=50, default='https://foreupsoftware.com/booking/20954#/login')
     Email = models.CharField(max_length=50, default='zhen.gong@predictifsolutions.com')
     Number_of_Retries = models.IntegerField(default=3)
+    Wait_Between_Thread = models.FloatField(default=0.5)
     Start_1 = models.BooleanField(default=False)
     Date_1 = models.DateField(default=one_week_ahead)
     Time_Slot_1 = models.TimeField(default=datetime.now)
@@ -49,6 +50,13 @@ class Scheduler(models.Model):
     Start_4 = models.BooleanField(default=False)
     Date_4 = models.DateField(default=one_week_ahead)
     Time_Slot_4 = models.TimeField(default=datetime.now)
+    Start_5 = models.BooleanField(default=False)
+    Date_5 = models.DateField(default=one_week_ahead)
+    Time_Slot_5 = models.TimeField(default=datetime.now)
+    Time_Slot_6 = models.TimeField(default=datetime.now)
+    Start_6 = models.BooleanField(default=False)
+    Date_6 = models.DateField(default=one_week_ahead)
+    Time_Slot_6 = models.TimeField(default=datetime.now)
 
     def __str__(self):
         return self.title
